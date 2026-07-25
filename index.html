@@ -358,6 +358,16 @@
                         Genera cartones numerados para este juego. Se marcarán solos a medida que salgan las bolas.
                     </p>
                     <div class="generator-controls-modal">
+                        <div class="metadata-input-group" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label for="card-organizer-input" class="voice-select-label" style="font-weight: 600;">Organizador:</label>
+                                <input type="text" id="card-organizer-input" class="metadata-input" placeholder="Nombre del organizador..." oninput="saveCardMetadata()">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label for="card-datetime-input" class="voice-select-label" style="font-weight: 600;">Fecha y Hora:</label>
+                                <input type="text" id="card-datetime-input" class="metadata-input" placeholder="Ej. Sábado 25 de Julio - 18:00" oninput="saveCardMetadata()">
+                            </div>
+                        </div>
                         <div style="display: flex; gap: 15px; align-items: flex-end;">
                             <div class="quantity-input-group">
                                 <label for="card-qty-input">Cantidad:</label>
@@ -382,6 +392,28 @@
                         <div id="generator-status-msg"
                             style="font-size: 0.8rem; color: var(--accent-green); font-weight: 600; text-align: center; display: none;">
                             ¡Cartones generados con éxito!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Games Panel -->
+                <div class="settings-block-modal saved-games-section-modal">
+                    <h3>💾 PARTIDAS GUARDADAS</h3>
+                    <p class="setting-text-desc">
+                        Guarda la partida actual con todos los cartones generados y el historial de bolillas, o carga una partida guardada previamente.
+                    </p>
+                    <div class="generator-controls-modal">
+                        <div style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
+                                <label for="save-game-name-input" class="voice-select-label" style="font-weight: 600;">Nombre de la Partida:</label>
+                                <input type="text" id="save-game-name-input" class="metadata-input" placeholder="Ej. Sorteo Especial Sábado..." style="width: 100%;">
+                            </div>
+                            <button id="btn-save-game" class="btn-action btn-accent" onclick="saveCurrentGame()" style="margin: 0; width: auto; padding: 10px 16px;">
+                                Guardar Partida
+                            </button>
+                        </div>
+                        <div id="saved-games-list" class="saved-games-list-container">
+                            <div class="saved-game-empty">No hay partidas guardadas.</div>
                         </div>
                     </div>
                 </div>

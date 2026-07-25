@@ -2340,3 +2340,115 @@ input:checked + .switch-slider:before {
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
+/* Saved Games UI Panel */
+.saved-games-list-container {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.saved-games-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.saved-games-list-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.saved-game-empty {
+    font-size: 0.8rem;
+    color: var(--secondary);
+    text-align: center;
+    font-style: italic;
+    padding: 15px 0;
+}
+
+.saved-game-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    gap: 10px;
+}
+
+.saved-game-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.saved-game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.saved-game-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brand-yellow);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.saved-game-meta {
+    font-size: 0.72rem;
+    color: var(--secondary);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 10px;
+}
+
+.saved-game-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.saved-game-actions .btn-action {
+    width: auto;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin: 0;
+    text-transform: none;
+    font-weight: 600;
+}
+
+.btn-load-game {
+    background: var(--accent-green) !important;
+    color: white !important;
+    box-shadow: 0 2px 5px rgba(16, 185, 129, 0.2) !important;
+}
+
+.btn-load-game:hover {
+    background: #0d9488 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35) !important;
+}
+
+.btn-delete-game {
+    background: var(--accent-red) !important;
+    color: white !important;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.2) !important;
+}
+
+.btn-delete-game:hover {
+    background: #dc2626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35) !important;
+}
+

@@ -10,7 +10,9 @@ let gameState = {
     volume: 0.7,
     selectedVoiceName: '',
     syncCode: '',
-    generatedCards: [] // List of generated cards
+    generatedCards: [], // List of generated cards
+    organizer: '',
+    datetime: ''
 };
 
 // Web Audio API Synthesizer Context
@@ -251,6 +253,12 @@ function startPlatform() {
     // Load game state from local storage or set defaults
     loadGameState();
 
+    // Load metadata inputs
+    const orgInput = document.getElementById('card-organizer-input');
+    const dtInput = document.getElementById('card-datetime-input');
+    if (orgInput) orgInput.value = gameState.organizer || '';
+    if (dtInput) dtInput.value = gameState.datetime || '';
+
     // Set UI elements from state
     document.getElementById('chk-sfx').checked = gameState.sfxEnabled;
     document.getElementById('chk-tts').checked = gameState.ttsEnabled;
@@ -289,6 +297,7 @@ function startPlatform() {
     updateGeneratorButtons();
     updateWinningCardsUI();
     clearCardSearch();
+    renderSavedGames();
 }
 
 // ==========================================
@@ -2060,5 +2069,216 @@ function updateWinningCardsUI() {
             }
         };
         list.appendChild(badge);
+    });
+}
+
+// ==========================================
+// METADATA & SAVED GAMES CONTROLS
+// ==========================================
+
+function saveCardMetadata() {
+    const orgInput = document.getElementById('card-organizer-input');
+    const dtInput = document.getElementById('card-datetime-input');
+    if (orgInput) gameState.organizer = orgInput.value;
+    if (dtInput) gameState.datetime = dtInput.value;
+    saveGameState();
+}
+
+function saveCurrentGame() {
+    const nameInput = document.getElementById('save-game-name-input');
+    if (!nameInput) return;
+
+    let gameName = nameInput.value.trim();
+    if (!gameName) {
+        // Generate automatic name if empty
+        const now = new Date();
+        const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        gameName = `Partida ${gameState.gameMode} Bolas - ${dateStr}`;
+    }
+
+    initAudio();
+    playClickSFX();
+
+    const savedGamesRaw = localStorage.getItem('el_bingote_saved_games');
+    let savedGames = [];
+    if (savedGamesRaw) {
+        try {
+            savedGames = JSON.parse(savedGamesRaw);
+        } catch (e) {
+            console.error("Error reading saved games list", e);
+        }
+    }
+
+    const newGame = {
+        id: 'game_' + Date.now(),
+        name: gameName,
+        gameMode: gameState.gameMode,
+        drawnBalls: [...gameState.drawnBalls],
+        ballsPool: [...gameState.ballsPool],
+        syncCode: gameState.syncCode,
+        generatedCards: JSON.parse(JSON.stringify(gameState.generatedCards || [])),
+        organizer: gameState.organizer || '',
+        datetime: gameState.datetime || '',
+        timestamp: Date.now()
+    };
+
+    savedGames.push(newGame);
+    localStorage.setItem('el_bingote_saved_games', JSON.stringify(savedGames));
+
+    nameInput.value = '';
+    renderSavedGames();
+    showAlert(`La partida "${gameName}" se ha guardado correctamente.`, "Juego Guardado");
+}
+
+function loadSavedGame(gameId) {
+    const savedGamesRaw = localStorage.getItem('el_bingote_saved_games');
+    if (!savedGamesRaw) return;
+
+    let savedGames = [];
+    try {
+        savedGames = JSON.parse(savedGamesRaw);
+    } catch (e) {
+        console.error("Error reading saved games list", e);
+        return;
+    }
+
+    const savedGame = savedGames.find(g => g.id === gameId);
+    if (!savedGame) {
+        showAlert("No se pudo encontrar la partida guardada.", "Error");
+        return;
+    }
+
+    // Confirm overwrite if there's any active progress
+    if (gameState.drawnBalls.length > 0 || (gameState.generatedCards && gameState.generatedCards.length > 0)) {
+        if (!confirm("¿Estás seguro de que quieres cargar esta partida? Se perderá el juego actual si no lo has guardado.")) {
+            return;
+        }
+    }
+
+    initAudio();
+    playClickSFX();
+
+    // Overwrite current gameState except the syncCode (keeps viewers connected!)
+    gameState.gameMode = savedGame.gameMode;
+    gameState.drawnBalls = [...savedGame.drawnBalls];
+    gameState.ballsPool = [...savedGame.ballsPool];
+    gameState.generatedCards = JSON.parse(JSON.stringify(savedGame.generatedCards || []));
+    gameState.organizer = savedGame.organizer || '';
+    gameState.datetime = savedGame.datetime || '';
+
+    // Rebuild pool if somehow mismatch
+    if (gameState.ballsPool.length === 0 && gameState.drawnBalls.length < gameState.gameMode) {
+        rebuildBallsPool();
+    }
+
+    // Save as the current state
+    saveGameState();
+
+    // Update form input values
+    const orgInput = document.getElementById('card-organizer-input');
+    const dtInput = document.getElementById('card-datetime-input');
+    if (orgInput) orgInput.value = gameState.organizer;
+    if (dtInput) dtInput.value = gameState.datetime;
+
+    // Refresh UI
+    updateGameModeUI();
+    renderBoard();
+    updateStats();
+    renderHistory();
+    renderBigBall();
+    initSimulationBalls();
+    
+    // Broadcast loaded state to active viewers immediately
+    broadcastState('sync');
+
+    // Enable/disable generator print and clear buttons based on if there are cards
+    renderPrintableCards();
+    updateGeneratorButtons();
+    updateWinningCardsUI();
+    clearCardSearch();
+
+    showAlert(`Partida "${savedGame.name}" cargada con éxito.`, "Juego Cargado");
+}
+
+function deleteSavedGame(gameId) {
+    const savedGamesRaw = localStorage.getItem('el_bingote_saved_games');
+    if (!savedGamesRaw) return;
+
+    let savedGames = [];
+    try {
+        savedGames = JSON.parse(savedGamesRaw);
+    } catch (e) {
+        console.error("Error reading saved games list", e);
+        return;
+    }
+
+    const gameToDelete = savedGames.find(g => g.id === gameId);
+    const gameName = gameToDelete ? gameToDelete.name : "esta partida";
+
+    if (!confirm(`¿Estás seguro de que deseas eliminar la partida "${gameName}"?`)) {
+        return;
+    }
+
+    initAudio();
+    playClickSFX();
+
+    savedGames = savedGames.filter(g => g.id !== gameId);
+    localStorage.setItem('el_bingote_saved_games', JSON.stringify(savedGames));
+
+    renderSavedGames();
+}
+
+function renderSavedGames() {
+    const listDiv = document.getElementById('saved-games-list');
+    if (!listDiv) return;
+
+    listDiv.innerHTML = '';
+
+    const savedGamesRaw = localStorage.getItem('el_bingote_saved_games');
+    let savedGames = [];
+    if (savedGamesRaw) {
+        try {
+            savedGames = JSON.parse(savedGamesRaw);
+        } catch (e) {
+            console.error("Error reading saved games list", e);
+        }
+    }
+
+    if (savedGames.length === 0) {
+        listDiv.innerHTML = '<div class="saved-game-empty">No hay partidas guardadas.</div>';
+        return;
+    }
+
+    // Sort newest first
+    savedGames.sort((a, b) => b.timestamp - a.timestamp);
+
+    savedGames.forEach(game => {
+        const item = document.createElement('div');
+        item.className = 'saved-game-item';
+
+        const date = new Date(game.timestamp);
+        const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        const info = document.createElement('div');
+        info.className = 'saved-game-info';
+        info.innerHTML = `
+            <div class="saved-game-title">${game.name}</div>
+            <div class="saved-game-meta">
+                <span>📅 ${formattedDate}</span>
+                <span>🎱 ${game.drawnBalls.length} extraídas</span>
+                <span>🎴 ${game.generatedCards.length} cartones</span>
+            </div>
+        `;
+        item.appendChild(info);
+
+        const actions = document.createElement('div');
+        actions.className = 'saved-game-actions';
+        actions.innerHTML = `
+            <button class="btn-action btn-load-game" onclick="loadSavedGame('${game.id}')">Cargar</button>
+            <button class="btn-action btn-delete-game" onclick="deleteSavedGame('${game.id}')">Eliminar</button>
+        `;
+        item.appendChild(actions);
+
+        listDiv.appendChild(item);
     });
 }

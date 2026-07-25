@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla de Transmisión - El Bingote!</title>
+    <meta name="description" content="Sigue la transmisión en tiempo real de El Bingote!. Tómbola y bolillero virtual en vivo.">
+    <meta name="keywords" content="bingo, tombola, bolillero, bolillero virtual, bingo virtual, juego de bingo, bingo 75 bolas, bingo 90 bolas, el bingote, sorteador de bingo, transmisión de bingo">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Proari Productions">
+    <link rel="canonical" href="https://elbingote.com/viewer.html">
+
+    <!-- Favicon / Iconos de pestaña -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <!-- Open Graph / Facebook / WhatsApp (Vista previa de enlaces) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://elbingote.com/viewer.html">
+    <meta property="og:title" content="Pantalla de Transmisión - El Bingote!">
+    <meta property="og:description" content="Sigue la transmisión en tiempo real de El Bingote!. Tómbola y bolillero virtual en vivo.">
+    <meta property="og:image" content="https://elbingote.com/og-image.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:image:type" content="image/png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://elbingote.com/viewer.html">
+    <meta property="twitter:title" content="Pantalla de Transmisión - El Bingote!">
+    <meta property="twitter:description" content="Sigue la transmisión en tiempo real de El Bingote!. Tómbola y bolillero virtual en vivo.">
+    <meta property="twitter:image" content="https://elbingote.com/og-image.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Datos estructurados (JSON-LD) para Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "El Bingote! - Pantalla de Transmisión",
+      "operatingSystem": "All",
+      "applicationCategory": "GameApplication",
+      "description": "Sigue la transmisión en tiempo real de El Bingote!. Tómbola y bolillero virtual en vivo.",
+      "image": "https://elbingote.com/og-image.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    <style>
+        /* Specific Styles for Viewer Screen */
+        .viewer-header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .btn-sound-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .btn-sound-toggle.active {
+            background: linear-gradient(135deg, var(--brand-orange) 0%, #d84315 100%);
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(255, 69, 0, 0.4);
+        }
+        .sync-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-red);
+            display: inline-block;
+        }
+        .status-dot.connected {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+        .status-dot.connecting {
+            background-color: var(--accent-gold);
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        /* Hide controls footer in viewer */
+        .viewer-container {
+            display: flex;
+            flex-direction: column;
+            gap: min(20px, 2vh);
+            max-width: 1500px;
+            margin: 0 auto;
+            height: 100%;
+        }
+        .viewer-main-grid {
+            display: grid;
+            grid-template-columns: minmax(260px, 1.1fr) minmax(260px, 1fr) minmax(360px, 2fr);
+            gap: 15px;
+            height: calc(100vh - 120px);
+            min-height: 460px;
+        }
+        @media (max-width: 1023px) {
+            .viewer-main-grid {
+                grid-template-columns: 1fr 1fr;
+                height: auto;
+            }
+            .viewer-board-panel {
+                grid-column: span 2;
+            }
+        }
+        @media (max-width: 768px) {
+            .viewer-main-grid {
+                grid-template-columns: 1fr;
+            }
+            .viewer-board-panel {
+                grid-column: span 1;
+            }
+        }
+        .viewer-footer {
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen Lock Overlay -->
+    <div id="lock-screen-overlay" class="lock-overlay-fullscreen" style="display: none;">
+        <div class="lock-card">
+            <div class="lock-logo-placeholder">El Bingote!</div>
+            <div class="lock-subtitle">Pantalla de Transmisión - Acceso Restringido</div>
+            
+            <div class="lock-form active" style="margin-top: 15px;">
+                <div class="lock-form-group">
+                    <label for="lock-guest-token">Enlace o Código de Acceso:</label>
+                    <input type="text" id="lock-guest-token" class="lock-input" placeholder="Ingrese el código de acceso proporcionado por el administrador">
+                </div>
+                <div id="lock-guest-error" class="lock-error">Código de acceso no válido o expirado.</div>
+                <button class="lock-btn" onclick="submitGuestAccess()">Desbloquear Pantalla</button>
+            </div>
+
+            <!-- Botón de WhatsApp de Solicitud de Acceso -->
+            <div class="lock-footer-whatsapp">
+                <a href="https://wa.me/59174758244?text=Hola!%20Me%20gustar%C3%ADa%20solicitar%20el%20uso%20del%20sistema%20de%20t%C3%B3mbola%20virtual%20con%20el%20costo%20de%2010%20Bs%20diario." 
+                   target="_blank" 
+                   class="whatsapp-lock-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="whatsapp-icon">
+                        <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
+                    </svg>
+                    Solicitar Acceso (10 Bs Diario)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="viewer-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <img src="logo.png" alt="El Bingote!" class="app-logo" id="logo-img" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+                <div class="logo-fallback" id="logo-fallback" style="display: none;">El Bingote!</div>
+            </div>
+            <div class="viewer-header-controls">
+                <div class="sync-status">
+                    <span id="sync-dot" class="status-dot connecting"></span>
+                    <span id="sync-text">Conectando...</span>
+                </div>
+                <button id="btn-sound-viewer" class="btn-sound-toggle" onclick="toggleViewerSound()">
+                    <span id="sound-icon">🔇</span> <span id="sound-text">Activar Sonido</span>
+                </button>
+                <div class="game-type-selector">
+                    <button id="viewer-mode-lbl" class="btn-toggle active" style="cursor: default;" disabled>Cargando...</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <main class="viewer-main-grid">
+            
+            <!-- Left Side: Visual Drum -->
+            <section class="visual-panel glass-panel">
+                <div class="panel-header">
+                    <h2>TÓMBOLA VIRTUAL</h2>
+                </div>
+                
+                <!-- Raffle Drum (Tómbola) Container -->
+                <div class="drum-outer-wrapper">
+                    <div class="drum-stand-left"></div>
+                    <div class="drum-sphere-container">
+                        <canvas id="drum-canvas" width="300" height="300"></canvas>
+                        <div class="drum-glass-reflection"></div>
+                    </div>
+                    <div class="drum-stand-right"></div>
+                    <div class="drum-chute">
+                        <div class="chute-exit"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Side: Big Ball display & History -->
+            <section class="display-panel glass-panel">
+                <div class="panel-header">
+                    <h2>BOLILLA EXTRAÍDA</h2>
+                </div>
+                
+                <!-- Big Ball Screen -->
+                <div class="big-ball-viewport">
+                    <div id="big-ball-container" class="big-ball-container-empty">
+                        <div class="big-ball-reflection"></div>
+                        <div id="big-ball-value" class="big-ball-value"><span class="big-ball-number-single">--</span></div>
+                    </div>
+                    <div id="big-ball-subtext" class="big-ball-subtext">Esperando sorteo...</div>
+                </div>
+
+                <!-- Last 5 Balls History -->
+                <div class="history-container">
+                    <h3>HISTORIAL RECIENTE</h3>
+                    <div class="history-balls-list" id="history-list">
+                        <div class="history-empty-msg">No se han extraído bolillas aún.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Full Board of Called Numbers -->
+            <section class="board-panel glass-panel viewer-board-panel">
+                <div class="board-header">
+                    <h2>TABLERO DE CONTROL</h2>
+                    <div class="board-stats">
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-drawn">0</span>
+                            <span class="stat-lbl">Extraídas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-remaining">--</span>
+                            <span class="stat-lbl">Restantes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-percent">0%</span>
+                            <span class="stat-lbl">Completado</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Board Grid Wrapper -->
+                <div class="board-grid-scroll">
+                    <div id="board-grid" class="board-grid grid-90">
+                        <!-- Numbers will be injected here -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="viewer-footer">
+            <p>Derechos Reservados: <a href="https://elbingote.com" target="_blank">elbingote.com</a> by Proari Systems | Conexión en Tiempo Real</p>
+        </footer>
+    </div>
+
+    <!-- App Logic -->
+    <script src="viewer.js"></script>
+</body>
+</html>

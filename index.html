@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Bingo - Tómbola y Bolillero Virtual</title>
+    <meta name="description"
+        content="Tómbola y bolillero virtual profesional para jugar al bingo tradicional de 75 y 90 bolas. Interfaz interactiva con sonido y voz.">
+    <meta name="keywords"
+        content="bingo, tombola, bolillero, bolillero virtual, bingo virtual, juego de bingo, bingo 75 bolas, bingo 90 bolas, mi bingo, sorteador de bingo, sorteo de bingo, bolillero online">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Proari Productions">
+    <link rel="canonical" href="www.mibingo.com">
+
+    <!-- Favicon / Iconos de pestaña -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <!-- Open Graph / Facebook / WhatsApp (Vista previa de enlaces) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mibingo.com/">
+    <meta property="og:title" content="Mi Bingo! - Tómbola y Bolillero Virtual">
+    <meta property="og:description"
+        content="Tómbola y bolillero virtual profesional para jugar al bingo tradicional de 75 y 90 bolas. Interfaz interactiva con sonido y voz.">
+    <meta property="og:image" content="https://mibingo.com/og-image.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:image:type" content="image/png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mibingo.com/">
+    <meta property="twitter:title" content="Mi Bingo! - Tómbola y Bolillero Virtual">
+    <meta property="twitter:description"
+        content="Tómbola y bolillero virtual profesional para jugar al bingo tradicional de 75 y 90 bolas. Interfaz interactiva con sonido y voz.">
+    <meta property="twitter:image" content="https://mibingo.com/og-image.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Poppins:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- App Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Datos estructurados (JSON-LD) para Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Mi Bingo!!",
+      "operatingSystem": "All",
+      "applicationCategory": "GameApplication",
+      "description": "Tómbola y bolillero virtual profesional para jugar al bingo tradicional de 75 y 90 bolas.",
+      "image": "https://mibingo.com/og-image.png",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+</head>
+
+<body>
+    <!-- Screen Lock Overlay -->
+    <div id="lock-screen-overlay" class="lock-overlay-fullscreen" style="display: none;">
+        <div class="lock-card">
+            <div class="lock-logo-placeholder">Mi Bingo!</div>
+            <div class="lock-subtitle">Sistema Tómbola y Bolillero Virtual</div>
+
+            <div class="lock-tabs">
+                <button id="tab-btn-guest" class="lock-tab-btn active" onclick="switchLockTab('guest')">Acceso
+                    Temporal</button>
+                <button id="tab-btn-admin" class="lock-tab-btn" onclick="switchLockTab('admin')">Administrador</button>
+            </div>
+
+            <!-- Guest Form -->
+            <div id="form-lock-guest" class="lock-form active">
+                <div class="lock-form-group">
+                    <label for="lock-guest-token">Enlace o Código de Acceso:</label>
+                    <input type="text" id="lock-guest-token" class="lock-input"
+                        placeholder="Pegue su enlace o código de acceso temporal">
+                </div>
+                <div id="lock-guest-error" class="lock-error">Código de acceso no válido o vencido.</div>
+                <button class="lock-btn" onclick="submitGuestAccess()">Desbloquear Sistema</button>
+            </div>
+
+            <!-- Admin Form -->
+            <div id="form-lock-admin" class="lock-form">
+                <div class="lock-form-group">
+                    <label for="lock-admin-key">Contraseña de Administrador:</label>
+                    <input type="password" id="lock-admin-key" class="lock-input"
+                        placeholder="Ingrese clave maestra de administración">
+                </div>
+                <div id="lock-admin-error" class="lock-error">Contraseña incorrecta.</div>
+                <button class="lock-btn" onclick="submitAdminAccess()">Ingresar como Admin</button>
+            </div>
+
+            <!-- Botón de WhatsApp de Solicitud de Acceso -->
+            <div class="lock-footer-whatsapp">
+                <a href="https://wa.me/59174758244?text=Hola!%20Me%20gustar%C3%ADa%20solicitar%20el%20uso%20del%20sistema%20de%20t%C3%B3mbola%20virtual%20con%20el%20costo%20de%2010%20Bs%20diario."
+                    target="_blank" class="whatsapp-lock-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="whatsapp-icon">
+                        <path
+                            d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
+                    </svg>
+                    Solicitar Acceso (10 $ Mensual)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <img src="logo.png" alt="Mi Bingo!" class="app-logo" id="logo-img"
+                    onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+                <div class="logo-fallback" id="logo-fallback" style="display: none;">Mi Bingo!</div>
+            </div>
+            <div class="header-controls">
+                <span class="control-label">MODO DE JUEGO:</span>
+                <div class="game-type-selector">
+                    <button id="btn-mode-90" class="btn-toggle" onclick="setGameMode(90)">90 Bolas</button>
+                    <button id="btn-mode-75" class="btn-toggle active" onclick="setGameMode(75)">75 Bolas</button>
+                </div>
+            </div>
+            <button id="btn-config" class="btn-config-icon" onclick="openConfigModal()" title="Configuración">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-gear">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Layout Grid -->
+        <main class="main-grid">
+
+            <!-- Left Side: Visual Drum and Main Drawer -->
+            <section class="visual-panel glass-panel">
+                <div class="panel-header">
+                    <h2>TÓMBOLA VIRTUAL</h2>
+                </div>
+
+                <!-- Raffle Drum (Tómbola) Container -->
+                <div class="drum-outer-wrapper">
+                    <div class="drum-stand-left"></div>
+                    <div class="drum-sphere-container">
+                        <canvas id="drum-canvas" width="300" height="300"></canvas>
+                        <div class="drum-glass-reflection"></div>
+                    </div>
+                    <div class="drum-stand-right"></div>
+                    <div class="drum-chute">
+                        <div class="chute-exit"></div>
+                    </div>
+                </div>
+
+                <!-- Draw Action Buttons -->
+                <div class="action-controls">
+                    <button id="btn-draw" class="btn-action btn-primary" onclick="drawNextBall()">
+                        <span class="btn-icon">🎲</span> EXTRAER BOLILLA
+                    </button>
+
+                    <div class="auto-play-container">
+                        <button id="btn-autoplay" class="btn-action btn-secondary" onclick="toggleAutoPlay()">
+                            <span id="autoplay-icon" class="btn-icon">▶</span> <span
+                                id="autoplay-text">Auto-Sorteo</span>
+                        </button>
+                        <div class="speed-control">
+                            <label for="speed-slider" class="speed-label">Velocidad: <span
+                                    id="speed-value">4</span>s</label>
+                            <input type="range" id="speed-slider" min="2" max="15" value="4" step="1"
+                                oninput="updateAutoSpeed(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Side: Big Ball display & History -->
+            <section class="display-panel glass-panel">
+                <div class="panel-header">
+                    <h2>BOLILLA EXTRAÍDA</h2>
+                </div>
+
+                <!-- Big Ball Screen -->
+                <div class="big-ball-viewport">
+                    <div id="big-ball-container" class="big-ball-container-empty">
+                        <div class="big-ball-reflection"></div>
+                        <div id="big-ball-value" class="big-ball-value"><span class="big-ball-number-single">--</span>
+                        </div>
+                    </div>
+                    <div id="big-ball-subtext" class="big-ball-subtext">Esperando sorteo...</div>
+                </div>
+
+                <!-- Last 5 Balls History -->
+                <div class="history-container">
+                    <h3>HISTORIAL RECIENTE</h3>
+                    <div class="history-balls-list" id="history-list">
+                        <div class="history-empty-msg">No se han extraído bolillas aún.</div>
+                    </div>
+                </div>
+
+                <!-- Card Search & Verification Panel -->
+                <div class="card-verifier-container">
+                    <h3>🔍 VERIFICADOR DE CARTONES</h3>
+                    <div class="verifier-search-row">
+                        <input type="number" id="card-search-input" placeholder="Nº de cartón..." min="1"
+                            oninput="searchBingoCard(this.value)">
+                        <button class="btn-action btn-secondary" onclick="clearCardSearch()">Limpiar</button>
+                    </div>
+                    <div id="search-card-result" class="search-card-result-empty">
+                        Ingrese un número de cartón para verificar.
+                    </div>
+                    <div class="winning-cards-status">
+                        <h4>🏆 GANADORES BINGO:</h4>
+                        <div id="winning-cards-list" class="winning-cards-list">
+                            Ninguno
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Full Board of Called Numbers -->
+            <section class="board-panel glass-panel">
+                <div class="board-header">
+                    <h2>TABLERO DE CONTROL</h2>
+                    <div class="board-stats">
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-drawn">0</span>
+                            <span class="stat-lbl">Extraídas</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-remaining">75</span>
+                            <span class="stat-lbl">Restantes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-percent">0%</span>
+                            <span class="stat-lbl">Completado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Board Grid Wrapper (populated by JS) -->
+                <div class="board-grid-scroll">
+                    <div id="board-grid" class="board-grid grid-90">
+                        <!-- Numbers will be injected here -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer / Settings & Printable Cards Panel -->
+        <footer class="app-footer">
+            <div class="footer-layout">
+                <button id="btn-reset" class="btn-action btn-danger" onclick="confirmReset()">
+                    <span class="btn-icon">🔄</span> REINICIAR JUEGO
+                </button>
+            </div>
+        </footer>
+
+        <!-- Rights Reserved -->
+        <div class="app-rights">
+            <p>Derechos Reservados: <a href="https://elbingote.com" target="_blank">mibingo.com</a> by Proari Systems
+            </p>
+        </div>
+
+
+    </div>
+
+    <!-- Modals -->
+    <!-- Reset Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <h2>⚠️ ¿Reiniciar el juego?</h2>
+            <p>Se borrarán todos los números extraídos y el juego actual se perderá por completo. ¿Estás seguro de que
+                quieres reiniciar?</p>
+            <div class="modal-actions">
+                <button class="btn-action btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+                <button class="btn-action btn-danger" onclick="executeReset()">Reiniciar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert / Winner Modal (Optional, can be triggered manually or when board full, here manual triggers) -->
+    <div id="alert-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <h2 id="alert-title">Notificación</h2>
+            <p id="alert-message">Mensaje de alerta.</p>
+            <div class="modal-actions">
+                <button class="btn-action btn-accent" onclick="closeAlertModal()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="config-modal" class="modal-overlay">
+        <div class="modal-content glass-panel config-modal-content">
+            <div class="modal-header-container">
+                <h2>⚙️ Configuración</h2>
+                <button class="btn-close" onclick="closeConfigModal()">&times;</button>
+            </div>
+
+            <div class="config-modal-body">
+                <!-- Settings Panel -->
+                <div class="settings-block-modal">
+                    <h3>CONFIGURACIÓN DE AUDIO Y VOZ</h3>
+                    <div class="settings-grid">
+                        <!-- SFX Toggle -->
+                        <div class="setting-item">
+                            <label class="switch-container">
+                                <input type="checkbox" id="chk-sfx" checked onchange="toggleSFX(this.checked)">
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span class="setting-text">Efectos de Sonido (SFX)</span>
+                        </div>
+
+                        <!-- Voice (TTS) Toggle -->
+                        <div class="setting-item">
+                            <label class="switch-container">
+                                <input type="checkbox" id="chk-tts" checked onchange="toggleTTS(this.checked)">
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span class="setting-text">Cantar Bolillas (Voz)</span>
+                        </div>
+
+                        <!-- Volume Slider -->
+                        <div class="setting-item col-span-2">
+                            <span class="setting-icon">🔊</span>
+                            <input type="range" id="volume-slider" min="0" max="1" value="0.7" step="0.1"
+                                oninput="updateVolume(this.value)" class="volume-slider">
+                            <span class="setting-text">Volumen</span>
+                        </div>
+
+                        <!-- Narrator Speech Selector -->
+                        <div class="setting-item col-span-2 voice-selector-container">
+                            <label for="voice-select" class="voice-select-label">Voz Narrador:</label>
+                            <select id="voice-select" onchange="changeVoice(this.value)" class="voice-select">
+                                <option value="">Detectando voces...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bingo Card Generator Panel -->
+                <div class="settings-block-modal card-generator-block-modal">
+                    <h3>🎴 GENERADOR DE CARTONES</h3>
+                    <p class="setting-text-desc">
+                        Genera cartones numerados para este juego. Se marcarán solos a medida que salgan las bolas.
+                    </p>
+                    <div class="generator-controls-modal">
+                        <div style="display: flex; gap: 15px; align-items: flex-end;">
+                            <div class="quantity-input-group">
+                                <label for="card-qty-input">Cantidad:</label>
+                                <input type="number" id="card-qty-input" min="1" max="500" value="20">
+                            </div>
+                            <button id="btn-generate-cards" class="btn-action btn-accent"
+                                onclick="generateCardsFromConfig()" style="flex-grow: 1; margin: 0; padding: 10px;">
+                                Generar Cartones
+                            </button>
+                        </div>
+                        <div class="generator-actions-modal"
+                            style="display: flex; flex-direction: row; gap: 10px; margin-top: 5px;">
+                            <button id="btn-print-cards" class="btn-action btn-print" onclick="printCards()"
+                                style="flex: 1;" disabled>
+                                🖨️ Imprimir Cartones
+                            </button>
+                            <button id="btn-clear-cards" class="btn-action btn-danger" onclick="clearGeneratedCards()"
+                                style="flex: 1;" disabled>
+                                🗑️ Borrar Cartones
+                            </button>
+                        </div>
+                        <div id="generator-status-msg"
+                            style="font-size: 0.8rem; color: var(--accent-green); font-weight: 600; text-align: center; display: none;">
+                            ¡Cartones generados con éxito!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Synchronization Panel -->
+                <div class="settings-block-modal sync-section-modal">
+                    <h3>TRANSMISIÓN EN TIEMPO REAL</h3>
+                    <p class="setting-text-desc">
+                        Permite que cualquier persona en el mundo vea el sorteo en tiempo real abriendo la pantalla de
+                        transmisión en su navegador.
+                    </p>
+                    <div class="sync-controls-wrapper">
+                        <button id="btn-open-viewer" class="btn-action btn-accent" onclick="openViewerTab()">
+                            🖥️ Abrir Pantalla de Transmisión
+                        </button>
+                        <div class="share-link-group">
+                            <input type="text" id="sync-share-url" readonly class="sync-url-input"
+                                placeholder="Cargando enlace...">
+                            <button id="btn-copy-sync" class="btn-action btn-secondary" onclick="copySyncLink()">
+                                📋 Copiar Enlace
+                            </button>
+                        </div>
+                    </div>
+                    <p class="sync-help-note" id="sync-help-text">
+
+                    </p>
+                </div>
+
+                <!-- Access and Licenses Configuration Panel (Admin Only) -->
+                <div class="settings-block-modal config-block-access" id="admin-access-section" style="display: none;">
+                    <h3>🔑 CONTROL DE ACCESO (ADMINISTRADOR)</h3>
+                    <p class="setting-text-desc">
+                        Genera un enlace de acceso temporal que permita a otros usar la plataforma de forma temporal por
+                        el tiempo configurado.
+                    </p>
+                    <div class="access-generator-wrapper">
+                        <div class="setting-item col-span-2 voice-selector-container"
+                            style="display: flex; flex-direction: column; gap: 8px;">
+                            <label for="access-duration" class="voice-select-label" style="font-weight: 600;">Duración
+                                del Enlace:</label>
+                            <select id="access-duration" class="access-duration-select">
+                                <option value="24">24 Horas</option>
+                                <option value="48">48 Horas</option>
+                                <option value="72">72 Horas</option>
+                            </select>
+                        </div>
+
+                        <div class="share-link-group">
+                            <input type="text" id="access-share-url" readonly class="sync-url-input"
+                                placeholder="El enlace generado se mostrará aquí...">
+                            <button id="btn-copy-access" class="btn-action btn-secondary" onclick="copyAccessLink()">
+                                📋 Copiar Enlace
+                            </button>
+                        </div>
+
+                        <div class="access-buttons-row">
+                            <button id="btn-generate-access" class="btn-action btn-accent"
+                                onclick="generateTemporaryLink()">
+                                ✨ Generar Enlace Temporal
+                            </button>
+                        </div>
+
+                        <button class="btn-action btn-danger btn-admin-logout" onclick="logoutAdmin()">
+                            🔒 Cerrar Sesión Administrador
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-action btn-primary" onclick="closeConfigModal()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Cards Area (Used for rendering cards on screen and printing) -->
+    <div id="printable-cards-area" class="printable-cards-area"></div>
+
+    <!-- html2canvas Library for JPG downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- App Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>

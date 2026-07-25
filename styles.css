@@ -1758,12 +1758,14 @@ input:checked + .switch-slider:before {
     border-color: var(--brand-yellow);
 }
 
-.share-link-group #btn-copy-sync {
+.share-link-group #btn-copy-sync,
+.share-link-group #btn-regenerate-sync {
     width: auto;
     padding: 8px 15px;
     font-size: 0.85rem;
     border-radius: 8px;
     white-space: nowrap;
+    margin: 0;
 }
 
 .sync-help-note {

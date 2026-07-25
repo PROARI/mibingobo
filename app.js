@@ -374,7 +374,7 @@ function generateSyncCode() {
     return code;
 }
 
-function getViewerUrl() {
+function getViewerUrlForCode(syncCode) {
     let baseUrl = window.location.href.split('?')[0].split('#')[0];
     if (baseUrl.endsWith('/')) {
         baseUrl = baseUrl + 'viewer.html';
@@ -384,7 +384,7 @@ function getViewerUrl() {
         baseUrl = baseUrl + '/viewer.html';
     }
     
-    let url = baseUrl + '?game=' + gameState.syncCode;
+    let url = baseUrl + '?game=' + syncCode;
     
     // Append temporary access token for the viewer
     let token = localStorage.getItem('el_bingote_token');
@@ -401,6 +401,10 @@ function getViewerUrl() {
     }
     
     return url;
+}
+
+function getViewerUrl() {
+    return getViewerUrlForCode(gameState.syncCode);
 }
 
 function initSyncState() {
@@ -441,6 +445,21 @@ function copySyncLink() {
     }
 }
 
+function regenerateActiveSyncCode() {
+    if (confirm("¿Estás seguro de que deseas generar un nuevo enlace de transmisión? Los visores conectados al enlace anterior se desconectarán.")) {
+        gameState.syncCode = generateSyncCode();
+        saveGameState();
+        
+        const urlInput = document.getElementById('sync-share-url');
+        if (urlInput) {
+            urlInput.value = getViewerUrl();
+        }
+        
+        broadcastState('sync');
+        showAlert("Nuevo enlace generado. Por favor compártelo con los espectadores.", "Enlace Actualizado");
+    }
+}
+
 function broadcastState(event, data = {}) {
     if (!gameState.syncCode) return;
     
@@ -459,7 +478,9 @@ function broadcastState(event, data = {}) {
     // Broadcast status over ntfy.sh
     fetch('https://ntfy.sh/el-bingote-' + gameState.syncCode, {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+            message: JSON.stringify(payload)
+        }),
         headers: {
             'Content-Type': 'application/json'
         }
@@ -1136,6 +1157,16 @@ function executeReset() {
     }
     
     resetGameState();
+    
+    // Generate a new sync code for the new game
+    gameState.syncCode = generateSyncCode();
+    saveGameState();
+    
+    // Update the UI link input
+    const urlInput = document.getElementById('sync-share-url');
+    if (urlInput) {
+        urlInput.value = getViewerUrl();
+    }
     
     // Re-enable mode buttons
     document.getElementById('btn-mode-90').disabled = false;
@@ -2161,13 +2192,14 @@ function loadSavedGame(gameId) {
     initAudio();
     playClickSFX();
 
-    // Overwrite current gameState except the syncCode (keeps viewers connected!)
+    // Overwrite current gameState
     gameState.gameMode = savedGame.gameMode;
     gameState.drawnBalls = [...savedGame.drawnBalls];
     gameState.ballsPool = [...savedGame.ballsPool];
     gameState.generatedCards = JSON.parse(JSON.stringify(savedGame.generatedCards || []));
     gameState.organizer = savedGame.organizer || '';
     gameState.datetime = savedGame.datetime || '';
+    gameState.syncCode = savedGame.syncCode || generateSyncCode();
 
     // Rebuild pool if somehow mismatch
     if (gameState.ballsPool.length === 0 && gameState.drawnBalls.length < gameState.gameMode) {
@@ -2182,6 +2214,11 @@ function loadSavedGame(gameId) {
     const dtInput = document.getElementById('card-datetime-input');
     if (orgInput) orgInput.value = gameState.organizer;
     if (dtInput) dtInput.value = gameState.datetime;
+
+    const urlInput = document.getElementById('sync-share-url');
+    if (urlInput) {
+        urlInput.value = getViewerUrl();
+    }
 
     // Refresh UI
     updateGameModeUI();
@@ -2231,6 +2268,22 @@ function deleteSavedGame(gameId) {
     renderSavedGames();
 }
 
+function copySavedGameLink(syncCode) {
+    if (!syncCode) {
+        showAlert("Esta partida no cuenta con un código de transmisión asignado.", "Error");
+        return;
+    }
+    const url = getViewerUrlForCode(syncCode);
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            showAlert("Enlace del visor para esta partida copiado al portapapeles.", "Enlace Copiado");
+        })
+        .catch(err => {
+            console.error("Error al copiar enlace: ", err);
+            showAlert("No se pudo copiar el enlace automáticamente.", "Error");
+        });
+}
+
 function renderSavedGames() {
     const listDiv = document.getElementById('saved-games-list');
     if (!listDiv) return;
@@ -2278,6 +2331,7 @@ function renderSavedGames() {
         actions.className = 'saved-game-actions';
         actions.innerHTML = `
             <button class="btn-action btn-load-game" onclick="loadSavedGame('${game.id}')">Cargar</button>
+            <button class="btn-action btn-secondary btn-copy-game-link" onclick="copySavedGameLink('${game.syncCode || ''}')" title="Copiar Enlace del Visor" style="margin: 0; padding: 6px 10px;">📋 Link</button>
             <button class="btn-action btn-delete-game" onclick="deleteSavedGame('${game.id}')">Eliminar</button>
         `;
         item.appendChild(actions);

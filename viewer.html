@@ -121,6 +121,9 @@
             max-width: 1500px;
             margin: 0 auto;
             height: 100%;
+            /* Make the tombola and extracted ball larger for audience view */
+            --drum-size: clamp(220px, 35vh, 380px);
+            --max-ball-size: 340px;
         }
         .viewer-main-grid {
             display: grid;
@@ -137,6 +140,10 @@
             .viewer-board-panel {
                 grid-column: span 2;
             }
+            .viewer-container {
+                --drum-size: clamp(180px, 25vh, 280px);
+                --max-ball-size: 260px;
+            }
         }
         @media (max-width: 768px) {
             .viewer-main-grid {
@@ -144,6 +151,10 @@
             }
             .viewer-board-panel {
                 grid-column: span 1;
+            }
+            .viewer-container {
+                --drum-size: clamp(160px, 35vw, 260px);
+                --max-ball-size: 220px;
             }
         }
         .viewer-footer {

@@ -131,6 +131,13 @@
                     <button id="btn-mode-75" class="btn-toggle active" onclick="setGameMode(75)">75 Bolas</button>
                 </div>
             </div>
+            <button id="btn-verifier-trigger" class="btn-config-icon btn-verifier-icon" onclick="openVerifierModal()" title="Verificador de Cartones">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icon-search" style="width: 20px; height: 20px; stroke: var(--brand-yellow);">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
             <button id="btn-config" class="btn-config-icon" onclick="openConfigModal()" title="Configuración">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-gear">
@@ -189,6 +196,9 @@
             <section class="display-panel glass-panel">
                 <div class="panel-header">
                     <h2>BOLILLA EXTRAÍDA</h2>
+                    <button class="btn-monitor-link" onclick="openViewerTab()" title="Abrir pantalla de transmisión (segundo monitor)">
+                        🖥️ 2° Monitor
+                    </button>
                 </div>
 
                 <!-- Big Ball Screen -->
@@ -209,24 +219,6 @@
                     </div>
                 </div>
 
-                <!-- Card Search & Verification Panel -->
-                <div class="card-verifier-container">
-                    <h3>🔍 VERIFICADOR DE CARTONES</h3>
-                    <div class="verifier-search-row">
-                        <input type="number" id="card-search-input" placeholder="Nº de cartón..." min="1"
-                            oninput="searchBingoCard(this.value)">
-                        <button class="btn-action btn-secondary" onclick="clearCardSearch()">Limpiar</button>
-                    </div>
-                    <div id="search-card-result" class="search-card-result-empty">
-                        Ingrese un número de cartón para verificar.
-                    </div>
-                    <div class="winning-cards-status">
-                        <h4>🏆 GANADORES BINGO:</h4>
-                        <div id="winning-cards-list" class="winning-cards-list">
-                            Ninguno
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- Right Side: Full Board of Called Numbers -->
@@ -418,32 +410,7 @@
                     </div>
                 </div>
 
-                <!-- Real-time Synchronization Panel -->
-                <div class="settings-block-modal sync-section-modal">
-                    <h3>TRANSMISIÓN EN TIEMPO REAL</h3>
-                    <p class="setting-text-desc">
-                        Permite que cualquier persona en el mundo vea el sorteo en tiempo real abriendo la pantalla de
-                        transmisión en su navegador.
-                    </p>
-                    <div class="sync-controls-wrapper">
-                        <button id="btn-open-viewer" class="btn-action btn-accent" onclick="openViewerTab()">
-                            🖥️ Abrir Pantalla de Transmisión
-                        </button>
-                        <div class="share-link-group">
-                            <input type="text" id="sync-share-url" readonly class="sync-url-input"
-                                placeholder="Cargando enlace...">
-                            <button id="btn-copy-sync" class="btn-action btn-secondary" onclick="copySyncLink()">
-                                📋 Copiar
-                            </button>
-                            <button id="btn-regenerate-sync" class="btn-action btn-danger" onclick="regenerateActiveSyncCode()" title="Generar nuevo enlace de transmisión para esta partida">
-                                🔄 Nuevo
-                            </button>
-                        </div>
-                    </div>
-                    <p class="sync-help-note" id="sync-help-text">
 
-                    </p>
-                </div>
 
                 <!-- Access and Licenses Configuration Panel (Admin Only) -->
                 <div class="settings-block-modal config-block-access" id="admin-access-section" style="display: none;">
@@ -490,6 +457,39 @@
 
             <div class="modal-actions">
                 <button class="btn-action btn-primary" onclick="closeConfigModal()">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verifier Modal -->
+    <div id="verifier-modal" class="modal-overlay">
+        <div class="modal-content glass-panel config-modal-content" style="max-width: 500px;">
+            <div class="modal-header-container">
+                <h2>🔍 VERIFICADOR DE CARTONES</h2>
+                <button class="btn-close" onclick="closeVerifierModal()">&times;</button>
+            </div>
+            
+            <div class="config-modal-body" style="padding-right: 0;">
+                <div class="card-verifier-container" style="border-top: none; padding: 0;">
+                    <div class="verifier-search-row">
+                        <input type="number" id="card-search-input" placeholder="Nº de cartón..." min="1"
+                            oninput="searchBingoCard(this.value)">
+                        <button class="btn-action btn-secondary" onclick="clearCardSearch()">Limpiar</button>
+                    </div>
+                    <div id="search-card-result" class="search-card-result-empty">
+                        Ingrese un número de cartón para verificar.
+                    </div>
+                    <div class="winning-cards-status">
+                        <h4>🏆 GANADORES BINGO:</h4>
+                        <div id="winning-cards-list" class="winning-cards-list">
+                            Ninguno
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 10px;">
+                <button class="btn-action btn-primary" onclick="closeVerifierModal()">Cerrar</button>
             </div>
         </div>
     </div>

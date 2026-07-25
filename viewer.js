@@ -30,6 +30,9 @@ let exitAnimationTimer = 0;
 let voices = [];
 let currentUtterance = null;
 
+// Safety background timeout
+let extractionBackupTimeoutId = null;
+
 // Sync / Network Variables
 let syncCode = '';
 let eventSource = null;
@@ -417,15 +420,29 @@ function startExtractionSequence(num) {
     exitAnimationTimer = 0;
     
     renderBigBallSpinner();
+
+    // Safety backup timeout to force ball extraction in case tab is in background (requestAnimationFrame paused)
+    if (extractionBackupTimeoutId) clearTimeout(extractionBackupTimeoutId);
+    extractionBackupTimeoutId = setTimeout(() => {
+        if (drawnBallTarget && drawnBallTarget.number === num) {
+            completeBallExtraction(num);
+        }
+    }, 1200); // 1.2 seconds backup
 }
 
 // Finalize drawn ball UI update (called either by simulation completion or forced by sync event)
 function completeBallExtraction(num) {
+    if (extractionBackupTimeoutId) {
+        clearTimeout(extractionBackupTimeoutId);
+        extractionBackupTimeoutId = null;
+    }
+    
+    // Prevent double extraction (if both animation and backup timeout fire)
+    if (gameState.drawnBalls.includes(num)) return;
+    
     drawnBallTarget = null;
     
-    if (!gameState.drawnBalls.includes(num)) {
-        gameState.drawnBalls.push(num);
-    }
+    gameState.drawnBalls.push(num);
     gameState.ballsPool = gameState.ballsPool.filter(x => x !== num);
     simBalls = simBalls.filter(b => b.number !== num);
     

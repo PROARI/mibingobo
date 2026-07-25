@@ -35,6 +35,10 @@ let exitAnimationTimer = 0;
 let voices = [];
 let currentUtterance = null;
 
+// Safety background timers
+let autoplayTimeoutId = null;
+let extractionBackupTimeoutId = null;
+
 // Initialize the Application on Load
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -232,6 +236,7 @@ function initApp() {
             closeConfirmModal();
             closeAlertModal();
             closeConfigModal();
+            closeVerifierModal();
         }
     });
 
@@ -247,11 +252,11 @@ function startPlatform() {
     canvas = document.getElementById('drum-canvas');
     ctx = canvas.getContext('2d');
 
-    // Load voices for Speech Synthesis
-    setupSpeech();
-
     // Load game state from local storage or set defaults
     loadGameState();
+
+    // Load voices for Speech Synthesis
+    setupSpeech();
 
     // Load metadata inputs
     const orgInput = document.getElementById('card-organizer-input');
@@ -374,7 +379,7 @@ function generateSyncCode() {
     return code;
 }
 
-function getViewerUrlForCode(syncCode) {
+function getViewerUrl() {
     let baseUrl = window.location.href.split('?')[0].split('#')[0];
     if (baseUrl.endsWith('/')) {
         baseUrl = baseUrl + 'viewer.html';
@@ -384,7 +389,7 @@ function getViewerUrlForCode(syncCode) {
         baseUrl = baseUrl + '/viewer.html';
     }
     
-    let url = baseUrl + '?game=' + syncCode;
+    let url = baseUrl + '?game=' + gameState.syncCode;
     
     // Append temporary access token for the viewer
     let token = localStorage.getItem('el_bingote_token');
@@ -403,10 +408,6 @@ function getViewerUrlForCode(syncCode) {
     return url;
 }
 
-function getViewerUrl() {
-    return getViewerUrlForCode(gameState.syncCode);
-}
-
 function initSyncState() {
     if (!gameState.syncCode) {
         gameState.syncCode = generateSyncCode();
@@ -422,7 +423,16 @@ function initSyncState() {
 }
 
 function openViewerTab() {
-    window.open(getViewerUrl(), '_blank');
+    let url = getViewerUrl();
+    const isAdmin = localStorage.getItem('el_bingote_admin') === 'true';
+    if (isAdmin) {
+        if (url.includes('access=')) {
+            url = url.replace(/access=[^&]+/, 'access=' + MASTER_KEY);
+        } else {
+            url += '&access=' + MASTER_KEY;
+        }
+    }
+    window.open(url, '_blank');
 }
 
 function copySyncLink() {
@@ -445,21 +455,6 @@ function copySyncLink() {
     }
 }
 
-function regenerateActiveSyncCode() {
-    if (confirm("¿Estás seguro de que deseas generar un nuevo enlace de transmisión? Los visores conectados al enlace anterior se desconectarán.")) {
-        gameState.syncCode = generateSyncCode();
-        saveGameState();
-        
-        const urlInput = document.getElementById('sync-share-url');
-        if (urlInput) {
-            urlInput.value = getViewerUrl();
-        }
-        
-        broadcastState('sync');
-        showAlert("Nuevo enlace generado. Por favor compártelo con los espectadores.", "Enlace Actualizado");
-    }
-}
-
 function broadcastState(event, data = {}) {
     if (!gameState.syncCode) return;
     
@@ -478,12 +473,7 @@ function broadcastState(event, data = {}) {
     // Broadcast status over ntfy.sh
     fetch('https://ntfy.sh/el-bingote-' + gameState.syncCode, {
         method: 'POST',
-        body: JSON.stringify({
-            message: JSON.stringify(payload)
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        body: JSON.stringify(payload)
     }).catch(err => {
         console.warn("Failed to broadcast state change:", err);
     });
@@ -957,6 +947,12 @@ function renderBigBall() {
 function drawNextBall() {
     if (isSpinning || drawnBallTarget) return; // Lock if already spinning/drawing
     
+    // Clear any pending autoplay timeouts to prevent concurrent loops
+    if (autoplayTimeoutId) {
+        clearTimeout(autoplayTimeoutId);
+        autoplayTimeoutId = null;
+    }
+    
     if (gameState.ballsPool.length === 0) {
         showAlert("¡El juego ha terminado! Todas las bolillas han sido extraídas.");
         if (gameState.isPlaying) toggleAutoPlay();
@@ -1012,10 +1008,26 @@ function triggerBallExtractionAnimation(num) {
     drawnBallTarget = simBall;
     drawnBallTarget.isTarget = true;
     exitAnimationTimer = 0;
+
+    // Safety backup timeout to force ball extraction in case tab is in background (requestAnimationFrame paused)
+    if (extractionBackupTimeoutId) clearTimeout(extractionBackupTimeoutId);
+    extractionBackupTimeoutId = setTimeout(() => {
+        if (drawnBallTarget && drawnBallTarget.number === num) {
+            onBallExtracted(num);
+        }
+    }, 1200); // 1.2 seconds backup
 }
 
 // Called by simulation loop once the target ball reaches the bottom chute exit
 function onBallExtracted(num) {
+    if (extractionBackupTimeoutId) {
+        clearTimeout(extractionBackupTimeoutId);
+        extractionBackupTimeoutId = null;
+    }
+    
+    // Prevent double extraction (if both animation and backup timeout fire)
+    if (gameState.drawnBalls.includes(num)) return;
+    
     drawnBallTarget = null;
     
     // Update State
@@ -1051,8 +1063,9 @@ function onBallExtracted(num) {
             toggleAutoPlay(); // Stop
             showAlert("¡El juego ha terminado! Todas las bolillas han sido extraídas.");
         } else {
-            // Schedule next draw based on speed slider
-            setTimeout(() => {
+            if (autoplayTimeoutId) clearTimeout(autoplayTimeoutId);
+            autoplayTimeoutId = setTimeout(() => {
+                autoplayTimeoutId = null;
                 if (gameState.isPlaying) {
                     drawNextBall();
                 }
@@ -1074,6 +1087,10 @@ function toggleAutoPlay() {
     if (gameState.isPlaying) {
         // Turn OFF
         gameState.isPlaying = false;
+        if (autoplayTimeoutId) {
+            clearTimeout(autoplayTimeoutId);
+            autoplayTimeoutId = null;
+        }
         btn.classList.remove('active');
         icon.textContent = '▶';
         text.textContent = 'Auto-Sorteo';
@@ -1143,6 +1160,16 @@ function closeConfigModal() {
     document.getElementById('config-modal').classList.remove('active');
 }
 
+function openVerifierModal() {
+    initAudio();
+    playClickSFX();
+    document.getElementById('verifier-modal').classList.add('active');
+}
+
+function closeVerifierModal() {
+    document.getElementById('verifier-modal').classList.remove('active');
+}
+
 function executeReset() {
     closeConfirmModal();
     
@@ -1151,22 +1178,25 @@ function executeReset() {
         toggleAutoPlay();
     }
     
+    if (autoplayTimeoutId) {
+        clearTimeout(autoplayTimeoutId);
+        autoplayTimeoutId = null;
+    }
+    
+    if (extractionBackupTimeoutId) {
+        clearTimeout(extractionBackupTimeoutId);
+        extractionBackupTimeoutId = null;
+    }
+    
+    isSpinning = false;
+    drawnBallTarget = null;
+    
     // Clear speaking
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
     }
     
     resetGameState();
-    
-    // Generate a new sync code for the new game
-    gameState.syncCode = generateSyncCode();
-    saveGameState();
-    
-    // Update the UI link input
-    const urlInput = document.getElementById('sync-share-url');
-    if (urlInput) {
-        urlInput.value = getViewerUrl();
-    }
     
     // Re-enable mode buttons
     document.getElementById('btn-mode-90').disabled = false;
@@ -2192,14 +2222,13 @@ function loadSavedGame(gameId) {
     initAudio();
     playClickSFX();
 
-    // Overwrite current gameState
+    // Overwrite current gameState except the syncCode (keeps viewers connected!)
     gameState.gameMode = savedGame.gameMode;
     gameState.drawnBalls = [...savedGame.drawnBalls];
     gameState.ballsPool = [...savedGame.ballsPool];
     gameState.generatedCards = JSON.parse(JSON.stringify(savedGame.generatedCards || []));
     gameState.organizer = savedGame.organizer || '';
     gameState.datetime = savedGame.datetime || '';
-    gameState.syncCode = savedGame.syncCode || generateSyncCode();
 
     // Rebuild pool if somehow mismatch
     if (gameState.ballsPool.length === 0 && gameState.drawnBalls.length < gameState.gameMode) {
@@ -2214,11 +2243,6 @@ function loadSavedGame(gameId) {
     const dtInput = document.getElementById('card-datetime-input');
     if (orgInput) orgInput.value = gameState.organizer;
     if (dtInput) dtInput.value = gameState.datetime;
-
-    const urlInput = document.getElementById('sync-share-url');
-    if (urlInput) {
-        urlInput.value = getViewerUrl();
-    }
 
     // Refresh UI
     updateGameModeUI();
@@ -2268,22 +2292,6 @@ function deleteSavedGame(gameId) {
     renderSavedGames();
 }
 
-function copySavedGameLink(syncCode) {
-    if (!syncCode) {
-        showAlert("Esta partida no cuenta con un código de transmisión asignado.", "Error");
-        return;
-    }
-    const url = getViewerUrlForCode(syncCode);
-    navigator.clipboard.writeText(url)
-        .then(() => {
-            showAlert("Enlace del visor para esta partida copiado al portapapeles.", "Enlace Copiado");
-        })
-        .catch(err => {
-            console.error("Error al copiar enlace: ", err);
-            showAlert("No se pudo copiar el enlace automáticamente.", "Error");
-        });
-}
-
 function renderSavedGames() {
     const listDiv = document.getElementById('saved-games-list');
     if (!listDiv) return;
@@ -2331,7 +2339,6 @@ function renderSavedGames() {
         actions.className = 'saved-game-actions';
         actions.innerHTML = `
             <button class="btn-action btn-load-game" onclick="loadSavedGame('${game.id}')">Cargar</button>
-            <button class="btn-action btn-secondary btn-copy-game-link" onclick="copySavedGameLink('${game.syncCode || ''}')" title="Copiar Enlace del Visor" style="margin: 0; padding: 6px 10px;">📋 Link</button>
             <button class="btn-action btn-delete-game" onclick="deleteSavedGame('${game.id}')">Eliminar</button>
         `;
         item.appendChild(actions);

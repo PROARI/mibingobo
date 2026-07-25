@@ -202,6 +202,9 @@ async function startViewerPlatform() {
             voices = window.speechSynthesis.getVoices();
         };
     }
+
+    // Display temporary access expiry indicator if applicable
+    displayExpiryIndicator();
 }
 
 // Show sync status dot and message
@@ -1058,5 +1061,81 @@ function drawSimulationCanvas() {
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.stroke();
+    }
+}
+
+function displayExpiryIndicator() {
+    // If admin is logged in, don't show the expiry indicator (admin has unlimited access)
+    if (localStorage.getItem('el_bingote_admin') === 'true') {
+        return;
+    }
+    
+    const token = localStorage.getItem('el_bingote_token');
+    if (!token) return;
+    
+    try {
+        const decoded = atob(token);
+        const parts = decoded.split('.');
+        if (parts.length !== 2) return;
+        const expiry = parseInt(parts[0]);
+        if (isNaN(expiry) || expiry <= Date.now()) return;
+        
+        // Remove existing indicator if any
+        const existing = document.getElementById('temp-access-expiry-indicator');
+        if (existing) {
+            existing.remove();
+        }
+        
+        const expiryDate = new Date(expiry);
+        const day = String(expiryDate.getDate()).padStart(2, '0');
+        const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
+        const year = expiryDate.getFullYear();
+        const hours = String(expiryDate.getHours()).padStart(2, '0');
+        const minutes = String(expiryDate.getMinutes()).padStart(2, '0');
+        const formattedDate = `${day}/${month}/${year} - ${hours}:${minutes} hs`;
+        
+        // Create indicator element
+        const indicator = document.createElement('div');
+        indicator.id = 'temp-access-expiry-indicator';
+        indicator.innerHTML = `⏳ Acceso válido hasta: <strong>${formattedDate}</strong>`;
+        
+        // Style indicator
+        Object.assign(indicator.style, {
+            position: 'fixed',
+            bottom: '15px',
+            right: '15px',
+            backgroundColor: 'rgba(10, 34, 64, 0.85)',
+            backdropFilter: 'blur(8px)',
+            webkitBackdropFilter: 'blur(8px)',
+            color: '#ffffff',
+            padding: '10px 16px',
+            borderRadius: '30px',
+            fontSize: '0.85rem',
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: '400',
+            border: '1px solid rgba(255, 69, 0, 0.4)', // orange tint border to match brand-orange
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(255, 69, 0, 0.2)',
+            zIndex: '9999',
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'opacity 0.3s ease'
+        });
+        
+        // Append print-hiding style dynamically
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @media print {
+                #temp-access-expiry-indicator {
+                    display: none !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(indicator);
+    } catch (e) {
+        console.error("Error showing expiry indicator:", e);
     }
 }

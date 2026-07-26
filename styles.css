@@ -1989,6 +1989,54 @@ input:checked + .switch-slider:before {
     transform: translateY(0);
 }
 
+.lock-footer-whatsapp {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.whatsapp-lock-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    padding: 13px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-family: var(--font-primary);
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.25);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.whatsapp-lock-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.45);
+    background: linear-gradient(135deg, #2ae06f 0%, #149c8c 100%);
+}
+
+.whatsapp-lock-btn:active {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 3px 10px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-lock-btn .whatsapp-icon {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    margin: 0;
+    flex-shrink: 0;
+}
+
 /* Link Generator block in Config Modal */
 .config-block-access {
     border-top: 1px dashed rgba(255, 255, 255, 0.15);

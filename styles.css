@@ -217,46 +217,7 @@ body {
     }
 }
 
-@media (max-width: 1023px) {
-    :root {
-        --drum-size: clamp(160px, 24vh, 240px);
-        --ball-size: clamp(110px, 18vh, 180px);
-    }
-    .main-grid {
-        grid-template-columns: 1fr 1fr;
-        height: auto;
-    }
-    .board-panel {
-        grid-column: span 2;
-    }
-    .visual-panel, .display-panel {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        min-height: 0;
-    }
-}
 
-@media (max-width: 768px) {
-    :root {
-        --drum-size: clamp(130px, 35vw, 180px);
-        --ball-size: clamp(100px, 28vw, 140px);
-        --max-ball-size: 140px;
-    }
-    .main-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    .board-panel {
-        grid-column: span 2;
-    }
-    .panel-header h2, .board-header h2 {
-        font-size: clamp(0.8rem, 3vw, 0.95rem);
-    }
-    .btn-monitor-link {
-        font-size: 0.65rem;
-        padding: 3px 8px;
-    }
-}
 
 /* Panel Header */
 .panel-header {
@@ -1674,6 +1635,9 @@ input:checked + .switch-slider:before {
         --ball-size: clamp(80px, 30vw, 100px);
         --max-ball-size: 100px;
     }
+    .big-ball-container-active, .big-ball-container-empty {
+        --ball-size: 90px !important;
+    }
     body {
         padding: 10px;
     }
@@ -2551,5 +2515,54 @@ input:checked + .switch-slider:before {
     background: #dc2626 !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35) !important;
+}
+
+@media (max-width: 1023px) {
+    :root {
+        --drum-size: clamp(160px, 24vh, 240px);
+        --ball-size: clamp(110px, 18vh, 180px);
+    }
+    .main-grid {
+        grid-template-columns: 1fr 1fr;
+        height: auto;
+    }
+    .board-panel {
+        grid-column: span 2;
+    }
+    .visual-panel, .display-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+    }
+    .big-ball-viewport {
+        height: auto;
+        container-type: normal;
+        flex: none;
+    }
+    .big-ball-container-active, .big-ball-container-empty {
+        --ball-size: 110px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --drum-size: clamp(130px, 35vw, 180px);
+        --ball-size: clamp(100px, 28vw, 140px);
+        --max-ball-size: 140px;
+    }
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+    .board-panel {
+        grid-column: span 1;
+    }
+    .panel-header h2, .board-header h2 {
+        font-size: clamp(0.8rem, 3vw, 0.95rem);
+    }
+    .btn-monitor-link {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+    }
 }
 

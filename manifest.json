@@ -1,0 +1,23 @@
+{
+  "name": "Mi Bingo - Tómbola y Bolillero Virtual",
+  "short_name": "Mi Bingo",
+  "description": "Tómbola y bolillero virtual profesional para jugar al bingo de 75 y 90 bolas.",
+  "start_url": "./index.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#04070f",
+  "theme_color": "#0a2240",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
